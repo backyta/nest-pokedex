@@ -18,7 +18,12 @@ async function bootstrap() {
     }),
   );
 
-  await app.listen(3000);
+  // Aqui como me encuentro fuera de un building block de Nest(servicio, controladores, etc), no se puede
+  // hacer inyeccion de dependencias para tomarlo mediente con configService, pero si puedo usar las
+  // variables de entorno directas(global)
+
+  await app.listen(process.env.PORT);
+  console.log(`App runnign on port ${process.env.PORT}`);
 }
 bootstrap();
 

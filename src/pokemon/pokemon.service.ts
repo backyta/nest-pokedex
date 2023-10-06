@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { ConfigService } from '@nestjs/config';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
 import { Model, isValidObjectId } from 'mongoose';
@@ -13,10 +14,19 @@ import { PaginadtionDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class PokemonService {
+  private defaultLimit: number;
+
   constructor(
     @InjectModel(Pokemon.name) // nombre del modelo que queremos usar(Pokemon-clase)
     private readonly pokemonModel: Model<Pokemon>, // Llamamos Model y le pasamos el generico como lucira(Pokemon)
-  ) {}
+    private readonly configService: ConfigService,
+  ) {
+    //* Esto es en caso no esten definidas las variables de entorno, es decir, con la funcion al usarla
+    //* llamamos a las variables de entorno y si estasn no estan usamos las por defecto.
+
+    //console.log(process.env.DEFAULT_LIMIT); //Ahora se debe llamar desde el configService
+    this.defaultLimit = configService.get<number>('default_limit');
+  }
 
   //* Methods
 
@@ -33,7 +43,9 @@ export class PokemonService {
   }
 
   findAll(paginadtionDto: PaginadtionDto) {
-    const { limit = 10, offset = 0 } = paginadtionDto;
+    //console.log(+process.env.DEFAULT_LIMIT); //NaN nest lo termina tomando como numero, si no se especifica el limit
+
+    const { limit = this.defaultLimit, offset = 0 } = paginadtionDto;
 
     return this.pokemonModel
       .find()
